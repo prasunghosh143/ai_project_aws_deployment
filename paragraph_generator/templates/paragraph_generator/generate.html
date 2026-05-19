@@ -125,45 +125,65 @@
             <a href="#">Help</a>
         </div>
     </footer>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script>
-        $(document).ready(function() {
-            $('#generateForm').on('submit', function(e) {
+        (function(){
+            const form = document.getElementById('generateForm');
+            const resultEl = document.getElementById('result');
+            const remainingEl = document.getElementById('remainingRequests');
+            const baseUrl = '{% url "stream_generate" %}';
+
+            function serializeFields() {
+                const data = new URLSearchParams();
+                data.append('topic', document.getElementById('topic').value || '');
+                data.append('grade_level', document.getElementById('grade_level').value || '');
+                data.append('tone', document.getElementById('tone').value || '');
+                data.append('style', document.getElementById('style').value || '');
+                data.append('word_limit', document.getElementById('word_limit').value || '200');
+                return data.toString();
+            }
+
+            form.addEventListener('submit', function(e){
                 e.preventDefault();
-                
-                const submitButton = $(this).find('button[type="submit"]');
-                submitButton.prop('disabled', true).text('Generating...');
-                
-                $.ajax({
-                    url: '{% url "generate_paragraph" %}',
-                    method: 'POST',
-                    data: $(this).serialize(),
-                    headers: {
-                        'X-CSRFToken': '{{ csrf_token }}'
-                    },
-                    success: function(response) {
-                        $('#result').html(` 
-                            <div class="result-success">
-                                <h3>Generated Paragraph:</h3>
-                                <p class="generated-text">${response.content}</p>
-                                <p class="word-count">Word count: <span>${response.word_count}</span></p>
-                                <p class="remaining-requests">Remaining requests: <span>${response.remaining_requests}</span></p>
-                            </div>
-                        `);
-                        $('#remainingRequests').text(response.remaining_requests);
-                    },
-                    error: function(xhr) {
-                        $('#result').html(` 
-                            <div class="result-error">
-                                <p>Error: ${xhr.responseJSON?.message || 'Something went wrong'}</p>
-                            </div>
-                        `);
-                    },
-                    complete: function() {
-                        submitButton.prop('disabled', false).text('Generate Paragraph');
+                const submitButton = form.querySelector('button[type="submit"]');
+                submitButton.disabled = true;
+                submitButton.textContent = 'Generating...';
+                resultEl.innerHTML = '<p class="loading">Connecting…</p>';
+
+                const qs = serializeFields();
+                const url = baseUrl + (qs ? ('?' + qs) : '');
+
+                const es = new EventSource(url);
+                let buffer = '';
+
+                es.onmessage = function(evt) {
+                    // append data chunk
+                    buffer += evt.data + '\n';
+                    // render markdown to HTML for rich text
+                    try {
+                        resultEl.innerHTML = marked.parse(buffer);
+                    } catch (err) {
+                        resultEl.textContent = buffer;
                     }
+                };
+
+                es.addEventListener('done', function() {
+                    // stream finished
+                    submitButton.disabled = false;
+                    submitButton.textContent = 'Generate Paragraph';
+                    es.close();
+                    // Optionally update remaining requests from server later
                 });
+
+                es.onerror = function(err) {
+                    console.error('EventSource error', err);
+                    submitButton.disabled = false;
+                    submitButton.textContent = 'Generate Paragraph';
+                    resultEl.innerHTML = '<div class="result-error">\n<p>Connection error. Try again.</p>\n</div>';
+                    es.close();
+                };
             });
-        });
+        })();
     </script>
 </body>
 </html>

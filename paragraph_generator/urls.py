@@ -17,6 +17,7 @@ urlpatterns = [
     path('', views.index, name='index'),
     path('dashboard/', views.dashboard, name='dashboard'),
     path('generate/', views.generate_paragraph_index, name='generate_paragraph'),
+    path('stream-generate/', views.stream_generate, name='stream_generate'),
 
     # Health check — used by Railway for deployment monitoring
     path('health/', health_check, name='health_check'),
