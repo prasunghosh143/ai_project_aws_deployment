@@ -167,6 +167,23 @@
                     }
                 };
 
+                es.addEventListener('meta', function(evt) {
+                    try {
+                        const meta = JSON.parse(evt.data);
+                        if (meta.is_fallback) {
+                            // show a small badge so user knows this was fallback content
+                            const badge = document.createElement('div');
+                            badge.className = 'fallback-badge';
+                            badge.textContent = 'Fallback content (offline)';
+                            badge.style.cssText = 'background:#ffcc00;color:#000;padding:6px;border-radius:6px;margin-bottom:8px;display:inline-block;font-weight:600;';
+                            resultEl.innerHTML = '';
+                            resultEl.appendChild(badge);
+                        }
+                    } catch (e) {
+                        // ignore parse errors
+                    }
+                });
+
                 es.addEventListener('done', function() {
                     // stream finished
                     submitButton.disabled = false;

@@ -194,6 +194,43 @@ def _sse_format(data: str) -> str:
         return ''.join(f"data: {line}\n" for line in lines) + "\n"
 
 
+def generate_fallback_content(topic: str) -> str:
+    subject = (topic or '').lower()
+    for prefix in ["write a paragraph about", "write about", "generate about", "about", "write paragraph about"]:
+        if subject.startswith(prefix):
+            subject = subject[len(prefix):].strip()
+    subject = subject.strip().capitalize() if subject.strip() else "your topic"
+
+    if "summarize" in topic.lower():
+        content = (
+            f"### Executive Summary\n\n"
+            f"The provided text has been synthesized to highlight the key points. The core subject revolves around "
+            f"essential concepts that drive practical efficiency and structural clarity. In summary, it emphasizes "
+            f"integrating dedicated workflows, streamlining background processes, and ensuring real-time feedback loops "
+            f"to optimize overall operational performance."
+        )
+    elif "story" in topic.lower() or "write a story" in topic.lower():
+        content = (
+            f"Once upon a time, in a world driven by curiosity, there was a great endeavor to understand {subject}. "
+            f"Scholars and practitioners from all walks of life gathered to unravel its mysteries. Through countless hours "
+            f"of dedication and creative exploration, they discovered that {subject} held the key to unlocking "
+            f"unprecedented opportunities. From that day forward, their pursuit of knowledge flourished, inspiring future generations "
+            f"to dream big and explore the unknown."
+        )
+    else:
+        content = (
+            f"### Overview of {subject}\n\n"
+            f"{subject} represents a subject of significant importance in both academic and practical spheres. "
+            f"For students and educators alike, gaining a clear understanding of this area provides essential insights, "
+            f"fosters critical thinking, and builds a strong foundation for future exploration.\n\n"
+            f"In our modern, fast-paced world, structured analysis and informed decision-making are critical. "
+            f"Dedicating time to study {subject} opens up a wealth of learning opportunities, helping to bridge "
+            f"the gap between theoretical concepts and practical real-world application."
+        )
+
+    return content
+
+
 def stream_generate(request):
         """SSE endpoint that streams generated content progressively.
 
@@ -215,8 +252,41 @@ def stream_generate(request):
             # Send an initial comment to establish the stream
             yield ': connected\n\n'
 
+            # Send metadata event (default: not fallback)
+            import json
+            yield 'event: meta\n'
+            yield f"data: {json.dumps({'is_fallback': False})}\n\n"
+
             try:
-                client = genai.Client(api_key=os.environ.get('MAIN_API_KEY'))
+                api_key = os.environ.get('MAIN_API_KEY')
+                if not api_key:
+                    # No API key — stream fallback content and mark it in meta
+                    fallback = generate_fallback_content(topic)
+                    yield 'event: meta\n'
+                    yield f"data: {json.dumps({'is_fallback': True, 'reason': 'no_api_key'})}\n\n"
+                    import re
+                    chunks = re.split(r'(?<=[.!?])\s+', fallback)
+                    for part in chunks:
+                        if not part:
+                            continue
+                        yield _sse_format(part)
+                        yield '\n'
+                    yield 'event: done\n'
+                    yield '\n'
+                    # Persist fallback
+                    try:
+                        word_count = len(fallback.split())
+                        GeneratedContent.objects.create(
+                            prompt=topic,
+                            content=fallback,
+                            word_count=word_count,
+                            topic=topic[:200],
+                        )
+                    except Exception:
+                        logger.exception('Failed to save fallback content')
+                    return
+
+                client = genai.Client(api_key=api_key)
                 resp = client.models.generate_content(
                     model=getattr(settings, 'GEMINI_MODEL', 'gemini-2.0-flash'), contents=f"{topic}\n{system}"
                 )
@@ -232,14 +302,12 @@ def stream_generate(request):
                 # Chunk the response for progressive rendering (by sentences)
                 import re
                 chunks = re.split(r'(?<=[.!?])\s+', content)
-                buffer = ''
                 for part in chunks:
                     if not part:
                         continue
-                    buffer += part + ' '
-                    # send this chunk
                     yield _sse_format(part)
                     yield '\n'
+
                 # final done event
                 yield 'event: done\n'
                 yield '\n'
