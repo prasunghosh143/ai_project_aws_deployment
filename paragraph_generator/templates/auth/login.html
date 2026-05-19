@@ -1,0 +1,77 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login | Kitto AI | AI Writing Assistant</title>
+
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="Log in to Kitto AI and access AI-powered writing tools that improve your writing skills. Sign in now to manage your content and enhance your productivity.">
+    <meta name="keywords" content="login, Kitto AI, AI writing assistant, writing tools, improve writing, sign in">
+    <meta name="author" content="Kitto AI Team">
+    
+    <!-- Open Graph Meta Tags for social sharing -->
+    <meta property="og:title" content="Login | Kitto AI | AI Writing Assistant">
+    <meta property="og:description" content="Log in to Kitto AI and access AI-powered writing tools that improve your writing skills. Sign in now to manage your content and enhance your productivity.">
+    <meta property="og:image" content="{% static 'images/logo.png' %}">
+    <meta property="og:url" content="https://sagarkundu.live/login">
+    <meta property="og:type" content="website">
+
+    <!-- Twitter Card Meta Tags -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Login | Kitto AI | AI Writing Assistant">
+    <meta name="twitter:description" content="Log in to Kitto AI and access AI-powered writing tools that improve your writing skills. Sign in now to manage your content and enhance your productivity.">
+    <meta name="twitter:image" content="{% static 'images/logo.png' %}">
+    <meta name="twitter:site" content="@KittoAI">
+
+    <!-- Link to custom CSS -->
+    <link rel="stylesheet" href="{% static 'css/auth/login.css' %}">
+</head>
+<body>
+    <div class="container">
+        <div class="login-card">
+            <h1 class="app-name">Kitto AI | AI Writing Assistant</h1>
+            <p class="helper-message">Please log in to access your account and manage your content effortlessly.</p>
+
+            {% if messages %}
+            <div class="alert-container">
+                {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}">
+                    {{ message }}
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <form method="post" class="form">
+                {% csrf_token %}
+                
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <input type="text" name="username" id="username" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" name="password" id="password" required>
+                </div>
+
+                {% if form.errors %}
+                <div class="error-message">
+                    <p>Your username and password didn't match. Please try again.</p>
+                </div>
+                {% endif %}
+                
+                <button type="submit" class="submit-button">Login</button>
+            </form>
+            
+            <div class="signup-prompt">
+                <p>Don't have an account? 
+                    <a href="{% url 'signup' %}" class="signup-link">Sign up</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

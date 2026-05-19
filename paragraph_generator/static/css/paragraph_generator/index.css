@@ -1,0 +1,32 @@
+
+/* Custom styling for the navbar button */
+*{
+    accent-color: rgb(107 33 168 / var(--tw-bg-opacity));
+    box-sizing: border-box;
+}
+.btn {
+    padding: 8px 16px;
+    background-color: #2D3748;
+    border-radius: 8px;
+    color: white;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.btn:hover {
+    background-color: #4A5568;
+}
+
+.btn-primary {
+    background-color: #A5008F;
+}
+
+.btn-primary:hover {
+    background-color: #9B006F;
+}
+
+/* Additional styling for form elements */
+textarea, input[type="text"] {
+    border: 1px solid #E2E8F0;
+    border-radius: 8px;
+}

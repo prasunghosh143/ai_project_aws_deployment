@@ -1,0 +1,168 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Sign up for Kitto AI, an AI-powered writing assistant to enhance your writing skills with personalized suggestions and tools tailored for students, professionals, and writers at all levels.">
+    <meta name="keywords" content="AI writing assistant, writing skills improvement, writing tools, AI-powered writing, Kitto AI, writer help, writing assistant for students, professional writing tools">
+    <meta name="robots" content="index, follow">
+    <meta name="author" content="Kitto AI">
+    <meta property="og:title" content="Sign Up | Kitto AI | AI Writing Assistant">
+    <meta property="og:description" content="Sign up for Kitto AI today and unlock the full potential of your writing with AI-powered tools.">
+    <meta property="og:image" content="{% static 'images/logo.png' %}">
+    <meta property="og:url" content="https://sagarkundu.live/signup">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Sign Up | Kitto AI | AI Writing Assistant">
+    <meta name="twitter:description" content="Join Kitto AI to improve your writing with AI-driven tools. Sign up now!">
+    <meta name="twitter:image" content="{% static 'images/logo.png' %}">
+    <meta name="twitter:site" content="@KittoAI">
+
+    <title>Sign Up | Kitto AI | AI Writing Assistant</title>
+    <link rel="stylesheet" href="{% static 'css/auth/signup.css' %}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+</head>
+<body>
+    <!-- Hidden SEO Content -->
+    <div style="display:none;">
+        <p>Sign up for Kitto AI today and start improving your writing with the latest AI-powered writing tools. Kitto AI is a platform designed to help writers of all levels enhance their skills, write more efficiently, and develop their unique style. With advanced features and personalized AI suggestions, Kitto AI is the best AI writing assistant you can use. Sign up now and join the Kitto AI family!</p>
+        <p>Our platform offers AI-driven tools, smart suggestions, and various resources to help you write better and faster. Whether you're a student, professional, or casual writer, Kitto AI will help you improve your writing skills and reach your writing goals. Join us today!</p>
+    </div>
+
+    <div class="form-section">
+        <span class="logo"><i class="bi bi-book"></i></span>
+        <h1>Join Kitto AI - Sign Up</h1>
+        <span class="sub-heading">Sign up to scale your writing today!</span>
+
+        <div class="btns">
+            <button class="btn-secondary">
+                <i class="bi bi-google"></i> Sign up with Google
+            </button>
+            <button class="btn-secondary">
+                <i class="bi bi-github"></i> Sign up with Github
+            </button>
+        </div>
+
+        <!-- Display error messages -->
+        {% if form.errors %}
+        <div class="error-container">
+            {% for field, errors in form.errors.items %}
+                <div class="error-field">
+                    <strong>{{ field|capfirst }}:</strong> {{ errors|join:', ' }}
+                </div>
+            {% endfor %}
+            {% if form.non_field_errors %}
+                <div class="error-field">
+                    {% for error in form.non_field_errors %}
+                        <strong>Error:</strong> {{ error }}
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        <form method="post" class="form" validate>
+            {% csrf_token %}
+            <!-- Username field -->
+            <label for="username">Username</label>
+            <input 
+                class="form-control {% if form.username.errors %}error{% endif %}" 
+                type="text" 
+                id="username" 
+                name="username" 
+                value="{{ form.username.value|default:'' }}" 
+                required 
+            />
+
+            <!-- Email field -->
+            <label for="email">Email</label>
+            <input 
+                class="form-control {% if form.email.errors %}error{% endif %}" 
+                type="email" 
+                id="email" 
+                name="email" 
+                value="{{ form.email.value|default:'' }}" 
+                required 
+            />
+
+            <!-- Password fields -->
+            <label for="password1">Password</label>
+            <input 
+                class="form-control {% if form.password1.errors %}error{% endif %}" 
+                type="password" 
+                id="password1" 
+                name="password1" 
+                required 
+            />
+
+            <label for="password2">Confirm Password</label>
+            <input 
+                class="form-control {% if form.password2.errors %}error{% endif %}" 
+                type="password" 
+                id="password2" 
+                name="password2" 
+                required 
+            />
+
+            <!-- Terms checkbox -->
+            <div class="input-group">
+                <input 
+                    type="checkbox" 
+                    id="terms" 
+                    name="terms" 
+                    {% if form.terms.value %}checked{% endif %} 
+                    required 
+                />
+                <label for="terms">
+                    I agree to the <a href="#">terms and conditions</a>.
+                </label>
+            </div>
+
+            <button type="submit" class="btn-primary mt">Sign Up</button>
+        </form>
+
+        <div class="footer-group">
+            <span>Already Registered? <a href="{% url 'login' %}">Sign In</a></span>
+            <a href="#">Forgot password?</a>
+        </div>
+
+        <!-- Message container -->
+        {% if messages %}
+        <div id="popup-container">
+            {% for message in messages %}
+            <div class="popup-message {% if message.tags %}{{ message.tags }}{% endif %}">
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="hero-section">
+        <h2>Unlock Your Writing Potential with Kitto AI<br>Join the Future of AI-Powered Writing</h2>
+<span class="sub-heading">Become a confident, skilled writer with personalized AI assistance.</span>
+
+        <img src="{% static 'images/dash.jpg' %}" alt="AI Writing Dashboard - Enhance your writing with Kitto AI" />
+    </div>
+
+    <script>
+        // Function to show and hide messages
+        document.addEventListener("DOMContentLoaded", function () {
+            const messages = document.querySelectorAll(".popup-message");
+            messages.forEach((message) => {
+                message.setAttribute("aria-live", "assertive");  // For screen readers
+                // Show the message
+                message.style.display = "block";
+
+                // Hide after 5 seconds
+                setTimeout(() => {
+                    message.style.opacity = "0";
+                    setTimeout(() => {
+                        message.style.display = "none";
+                    }, 500); // Match fade-out duration
+                }, 5000); // Adjust duration as needed
+            });
+        });
+    </script>
+</body>
+</html>
